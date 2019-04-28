@@ -228,6 +228,26 @@ def start():
     send_mail(title, "%s has been modified by someone,check script stop" % named_config_path)
 
 
+def tcp_connect(host, port):  #
+    from socket import socket, AF_INET, SOCK_STREAM
+    tcpClient = socket(AF_INET, SOCK_STREAM)
+    tcpClient.settimeout(TCP_TIME_OUT)
+    try:
+        tcpClient.connect((host, int(port)))
+        tcpClient.close()
+        return True
+    except:
+        return False
+
 def check_host_by_tcp_ping(iplist):
-    # TODO 通过tcpping检查目标主机是否存活
-    return True
+    # 通过tcpping检查目标主机是否存活
+    for addr in iplist:
+        tmp = addr.split(":")
+        for _ in range(TCP_RETRY):
+            print("%d try"% _ )
+            if tcp_connect(tmp[0],tmp[1]) is True:
+                return True
+    return False
+
+if __name__ == "__main__":
+    print check_host_by_tcp_ping(["114.114.114.114:43","8.8.8.8:53"])

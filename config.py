@@ -39,6 +39,8 @@ view_rulers = {
 wait_time = 600
 final_default_change_ip = ["2", ["9.9.9.9"]]
 
+TCP_TIME_OUT = 2
+TCP_RETRY = 5
 send_mail_info = {
     "From": "yybmonitor@net-east.com",
     "To": ["songsx@net-east.com"],
@@ -83,14 +85,14 @@ def load_test_info():  # 获取每个forward探测目标都在哪些view里生�
     for viewName, viewInfo in view_rulers.iteritems():
         for forwardName, forwardTestInfo in viewInfo['forwards'].iteritems():
             if ";".join(forwardTestInfo["testDNS"]) not in testDNSInfo:
-                testDNSInfo[";".join(forwardTestInfo["testDNS"])] = {"status": True,"forwardInfo":[
+                testDNSInfo[";".join(forwardTestInfo["testDNS"])] = {"status": True, "forwardInfo": [
                     {"viewName": viewName, "forwardName": forwardName}]}
             else:
                 testDNSInfo[";".join(forwardTestInfo["testDNS"])]["forwardInfo"].append(
                     {"viewName": viewName, "forwardName": forwardName})
             if "testA" in forwardTestInfo:
                 if ";".join(forwardTestInfo["testA"]) not in testAInfo:
-                    testAInfo[";".join(forwardTestInfo["testA"])] ={"status": True,"forwardInfo":[
+                    testAInfo[";".join(forwardTestInfo["testA"])] = {"status": True, "forwardInfo": [
                         {"viewName": viewName, "forwardName": forwardName}]}
                 else:
                     testAInfo[";".join(forwardTestInfo["testA"])]["forwardInfo"].append(

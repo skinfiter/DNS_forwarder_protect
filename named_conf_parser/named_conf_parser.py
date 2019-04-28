@@ -70,7 +70,7 @@ class NamedConfig:
         which_line = self._find_word()
         all_lines = self._sort_dirt(which_line)
         for key, info in all_lines:
-            tmp=key.split()
+            tmp = key.split()
             if tmp[0] == "include":
                 if info['rp'] < which_line['options']['rp']:
                     self.pro_include_list.append((tmp[1].strip().strip('"'), info['rp']))
@@ -108,17 +108,17 @@ class NamedConfig:
                 if content_d.has_key('include'):
                     content_d['include'].append((key.split()[-1].strip('"'), info['rp']))
                 else:
-                    content_d['include']=[(key.split()[-1].strip('"'), info['rp'])]
+                    content_d['include'] = [(key.split()[-1].strip('"'), info['rp'])]
             elif 'forwarders' in key:
                 info.pop('rp')
-                content_d['forwarders']=info.keys()
+                content_d['forwarders'] = info.keys()
             else:
                 content_d[key] = info
         return content_d
 
     @staticmethod
     def _sort_dirt(tmp):
-        return sorted(tmp.iteritems(),key=lambda a:a[1]['rp'],reverse=False)
+        return sorted(tmp.iteritems(), key=lambda a: a[1]['rp'], reverse=False)
 
     def _find_word(self):
         info = {}
@@ -146,8 +146,8 @@ class NamedConfig:
                 else:
                     current_dirt = info
                     for one_t in key_list:
-                        current_dirt=current_dirt[one_t]
-                    current_dirt[line] = {'rp':rp}
+                        current_dirt = current_dirt[one_t]
+                    current_dirt[line] = {'rp': rp}
                 key_list.append(line)
                 line = ""
                 rp += 1
@@ -159,29 +159,29 @@ class NamedConfig:
         return info
 
     @staticmethod
-    def dict_to_string(self, data, tag="    "):
+    def dict_to_string(self, data, tag="\t"):
         includes = []
-        if data.has_key('include'):
+        if 'include' in data:
             includes = sorted(data['include'], key=lambda a: a[1], reverse=False)
         forwarders = []
-        if data.has_key('forwarders'):
+        if 'forwarders' in data:
             forwarders = data['forwarders']
         line = "{\n"
         tmp_data = []
         for key, info in data.iteritems():
-            if key in ['rp', 'include', 'forwarders']:   # 这三个类型的数据，已经进行了特殊处理，故在此处排除掉
+            if key in ['rp', 'include', 'forwarders']:  # 这三个类型的数据，已经进行了特殊处理，故在此处排除掉
                 continue
-            tmp_data.append((key,info))
+            tmp_data.append((key, info))
         tmp = sorted(tmp_data, key=lambda a: a[1]['rp'], reverse=False)
         for key, info in tmp:
             if len(info) > 1:
                 line += (tag + key)
-                line += self.dict_to_string(self, info, tag=tag + '\t' )
+                line += self.dict_to_string(self, info, tag=tag + '\t')
             else:
                 line += (tag + key + ';\n')
         for one in includes:
             line += (tag + 'include "%s";\n' % one[0])
-        if forwarders:
+        if len(forwarders) > 0:
             line += (tag + 'forwarders {%s;};\n' % (';'.join(forwarders)))
         line += (tag + '};\n')
         return line
@@ -201,7 +201,7 @@ class NamedConfig:
         named_conf_context += self.dict_to_string(self, self.options)
         named_conf_context += "logging "
         named_conf_context += self.dict_to_string(self, self.logging)
-        for one in sorted(self.view_list, key=lambda a:a['rp'],reverse=False):
+        for one in sorted(self.view_list, key=lambda a: a['rp'], reverse=False):
             named_conf_context += ("view %s " % one['name'])
             named_conf_context += self.dict_to_string(self, one['info'])
         for one in sorted(self.end_include_list, key=lambda b: b[1], reverse=False):
@@ -224,9 +224,8 @@ class NamedConfig:
         else:
             return False
 
+
 if __name__ == "__main__":
     conf = NamedConfig('../named.conf')
     print conf.logging
     print conf.tostring()
-
-
