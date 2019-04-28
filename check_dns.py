@@ -108,6 +108,7 @@ def start():
         print("settings is different from %s" % named_config_path)
         exit()
     start_time = 0
+    send_mail(title, "<h3>DNS探测保护脚本已开启。</h3>")
     while conf.check_hash():
         all_msg = "<html><head></head><body>"
         flag = 0
