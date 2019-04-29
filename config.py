@@ -1,43 +1,88 @@
 # encoding=utf-8
 
-title = u"DNS切换提醒测试"
-local_ip = "116.77.75.234"
+title = u"湖北广电DNS切换提醒测试"
+local_ip = "172.31.180.226"
+
+## testDNS
+## testA
+
 
 view_rulers = {
-    "tianbao_resolver": {
+    "boce_resolver": {
         'forwards': {
-            "/negslb/nebind/etc/forward/sdns/sdns.list": {
-                'testDNS': ['114.114.114.114'],
-                'testA': ['10.0.140.50:8100', '10.0.140.27:443']
-            },
-            "/negslb/nebind/etc/forward/liantong/liantong.list": {
-                'testDNS': ['8.8.8.8']
-            }
+            "/var/named/boce/114.list": { 'testDNS': ['114.114.114.114','118.118.118.118'] },
+            "/var/named/domain/bjhk_qiyi.list": { 'testDNS': ['114.113.88.254'] },
+            "/var/named/boce/teshu.list": { 'testDNS': ['211.137.64.163','211.137.58.20'] },
+            "/var/named/boce/sz_tw_cdn.list": { 'testDNS': ['211.148.192.141','211.148.192.151'] },
+            "/var/named/boce/web.list": { 'testDNS': ['172.31.180.213'] },
+            "/etc/named.rfc1912.zones": { 'testDNS': ['172.31.180.194'] }
         },
         "default": {
-            "0": ["114.114.114.114"],
-            "1": ["8.8.8.8"],
-            "2": ['9.9.9.9']
+            "0": ["211.137.64.163","211.137.58.20"],
+            "1": ["103.78.124.66","103.78.124.88"],
+            "2": ["211.98.2.4"],
+            "3": ["114.114.114.114","118.118.118.118"]
         }
     },
-    "other_resolver": {
+    "shiyan_resolver": {
         'forwards': {
-            "/negslb/nebind/etc/forward/sdns/sdns.list": {
-                'testDNS': ['114.114.1.1'],
-                'testA': ['10.0.140.50:8100', '10.0.140.27:443']
-            }
+            "/var/named/domainSY/114.list":{ 'testDNS':['114.114.114.114','118.118.118.118'] },
+            "/var/named/domain/hn_ali_cdn.list":{ 'testDNS': ['103.78.124.66','103.78.124.88'] },
+            "/var/named/domain/bjhk_qiyi.list":{ 'testDNS': ['114.113.88.254'] },
+            "/var/named/domainSY/sz_tw_cdn.list":{ 'testDNS': ['211.148.192.141','211.148.192.151'] },
+            "/var/named/domainSY/shiyan.zones":{ 'testDNS': ['172.31.180.194'] },
+            "/var/named/domainSY/teshu.list":{ 'testDNS': ['211.137.58.20','211.137.64.163'] },
+            "/var/named/domainSY/baidu.list":{ 'testDNS': ['180.76.76.76'] }
         },
         'default': {
-            "0": ["114.114.114.114", "114.114.115.115"],
-            "1": ["8.8.8.8"],
-            "2": ['9.9.9.9']
+            "0": ["211.137.64.163","211.137.58.20"],
+            "1": ["103.78.124.66","103.78.124.88"],
+            "2": ["211.98.2.4"],
+            "3": ["114.114.114.114","118.118.118.118"]
+        }
+    },
+    "jingzhou_resolver":{
+        'forwards': {
+            "/var/named/domain/114.list":{ "testDNS": ['114.114.114.114','118.118.118.118'] },
+            "/var/named/domain/hn_ali_cdn.list":{ 'testDNS': ['103.78.124.66','103.78.124.88'] },
+            "/var/named/domain/bjhk_qiyi.list":{ 'testDNS': ['114.113.88.254'] },
+            "/var/named/domain/sz_tw_cdn.list":{ 'testDNS': ['211.148.192.141','211.148.192.151'] },
+            "/var/named/named.rfc1912.zones":{ 'testDNS': ['172.31.180.194'] },
+            "/var/named/domain/wuhanyidong.list":{ 'testDNS': ['211.137.58.20','211.137.64.163'] },
+            "/var/named/domain/liantong.list":{ 'testDNS': ['202.99.224.68','202.99.224.8'] },
+            "/var/named/domain/baidu.list":{ 'testDNS': ['180.76.76.76'] }
+        },
+        "default": {
+            "0": ["211.137.64.163","211.137.58.20"],
+            "1": ["103.78.124.66","103.78.124.88"],
+            "2": ["211.98.2.4"],
+            "3": ["114.114.114.114","118.118.118.118"],
+            "4": ["172.16.23.16"]
+        }
+    },
+    "user_resolver":{
+        'forwards': {
+            "/var/named/domain/114.list":{ "testDNS": ['114.114.114.114','118.118.118.118'] },
+            "/var/named/domain/hn_ali_cdn.list":{ 'testDNS': ['103.78.124.66','103.78.124.88'] },
+            "/var/named/domain/bjhk_qiyi.list":{ 'testDNS': ['114.113.88.254'] },
+            "/var/named/domain/sz_tw_cdn.list":{ 'testDNS': ['211.148.192.141','211.148.192.151'] },
+            "/var/named/named.rfc1912.zones":{ 'testDNS': ['172.31.180.194'] },
+            "/var/named/domain/wuhanyidong.list":{ 'testDNS': ['211.137.58.20','211.137.64.163'] },
+            "/var/named/domain/baidu.list":{ 'testDNS': ['180.76.76.76'] }
+        },
+        "default": {
+            "0": ["211.137.64.163","211.137.58.20"],
+            "1": ["103.78.124.66","103.78.124.88"],
+            "2": ["211.98.2.4"],
+            "3": ["114.114.114.114","118.118.118.118"],
+            "4": ["172.16.23.16"]
         }
     }
 }
 
-####延迟切换dns设置
+####延迟切换dns设置,当所有DNS都失败后，延迟一定的时间切换到配置的DNS上
 wait_time = 600
-final_default_change_ip = ["2", ["9.9.9.9"]]
+final_default_change_ip = ["4", ["172.16.23.16"]]   ## 请始终配置最后一个forward
 
 TCP_TIME_OUT = 2
 TCP_RETRY = 5
@@ -48,21 +93,21 @@ send_mail_info = {
     "passwd": "Monitor123"
 }
 
-named_config_path = "./named.conf"
+named_config_path = "/etc/named.conf"
 
 check_domain_list = [
     "www.qq.com",
     "www.baidu.com",
     "www.sina.com.cn",
-    "www.taobao.com",
-    "www.jd.com",
-    "www.ifeng.com",
-    "www.youku.com",
-    "www.mgtv.com",
-    "www.yhd.com",
-    "www.vip.com",
-    "www.suning.com",
-    "www.mogujie.com"
+    # "www.taobao.com",
+    # "www.jd.com",
+    # "www.ifeng.com",
+    # "www.youku.com",
+    # "www.mgtv.com",
+    # "www.yhd.com",
+    # "www.vip.com",
+    # "www.suning.com",
+    # "www.mogujie.com"
 ]
 
 # 配置文件预整理

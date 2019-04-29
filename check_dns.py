@@ -43,6 +43,7 @@ def check_dns(dns_list):
                 logger.error("resolve " + domain + " @" + dns + " faild")
             else:
                 logger.info("resolve " + domain + " @" + dns + " ok")
+                return True
         if faild == len(domain_list):  # 某一dns全部探测失败才算作失败
             faild1 += 1
     if faild1 >= len(dns_list):
@@ -62,9 +63,9 @@ def view_default_forward_check(view_name, current_rule_id):
         if checkViewName == view_name:
             rulers = checkViewInfo['default'].iteritems()
             for ruler_id, dns_list in sorted(rulers, key=lambda a: a[0], reverse=False):
-                if ruler_id == current_rule_id and check_dns(dns_list):
+                if (ruler_id == current_rule_id) and check_dns(dns_list):
                     return True
-                elif ruler_id != current_rule_id and check_dns(dns_list):
+                elif (ruler_id != current_rule_id) and check_dns(dns_list):
                     return (ruler_id, dns_list)
     return False
 
@@ -124,12 +125,12 @@ def start():
         # 检查各个view中的默认forward方向
         for view_name, current_rule_id in current_status.iteritems():
             status = view_default_forward_check(view_name, current_rule_id)
-            if type(status) is bool and status is False:
+            if (type(status) is bool) and (status is False):
                 ##全部dns探测失败，准备切换到楚天
                 if start_time == 0:  ##初次发现，开始计时，策略不变
                     start_time = time.time()
                     msg = "all of view %s's default forwarders has filed;plan to change dns to %s;left %d s" % (
-                        view_name, json.dump(final_default_change_ip[1]), wait_time)
+                        view_name, ";".join(final_default_change_ip[1]), wait_time)
                     logger.info(msg.strip())
                     all_msg += ("%s<br/>" % msg)
                 elif time.time() - start_time > wait_time:  ##计时达到标准，切换到楚天方向
@@ -143,7 +144,7 @@ def start():
                             all_msg += ("%s<br/>" % msg)
                 else:
                     pass
-            elif type(status) is bool and status is True:  ##当前策略探测成功，且没有优先级更高的策略成功
+            elif (type(status) is bool) and (status is True):  ##当前策略探测成功，且没有优先级更高的策略成功
                 if start_time != 0:  ##若已经开始切换计时，则停止计时
                     start_time = 0
             else:  ## 当前dns探测失败，且有其他dns探测成功
@@ -151,7 +152,7 @@ def start():
                     if start_time == 0:  # 初次发现，准备切换到楚天方向
                         start_time = time.time()
                         msg = "plan change view %s default forwarders to %s;left %d s" % (
-                            view_name, json.dump(final_default_change_ip[1]), wait_time)
+                            view_name, ";".join(final_default_change_ip[1]), wait_time)
                         logger.info(msg.strip())
                         all_msg += ("%s<br/>" % msg)
                     elif time.time() - start_time > wait_time:
@@ -178,40 +179,47 @@ def start():
         for testDNSIp, forwardInfos in testDNSInfo.iteritems():  # forward DNS 监测
             status = check_dns(testDNSIp.split(';'))
             for forwardInfo in forwardInfos["forwardInfo"]:
-                if status is True and forwardInfos['status'] is False:  # 链路恢复，forward DNS测试成功
+                if (status is True) and (forwardInfos['status'] is False):  # 链路恢复，forward DNS测试成功
                     flag += 1
                     msg = "add view %s include %s,test dns %s;" % (
                         forwardInfo["viewName"], forwardInfo["forwardName"], testDNSIp)
-                elif status is False and forwardInfos['status'] is True:  # 链路故障，forward DNS测试失败
+                    logger.info(msg.strip())
+                    all_msg += ("%s<br/>" % msg)
+                elif (status is False) and (forwardInfos['status'] is True):  # 链路故障，forward DNS测试失败
                     flag += 1
                     msg = "delete view %s include %s,test dns %s;" % (
                         forwardInfo["viewName"], forwardInfo["forwardName"], testDNSIp)
+                    logger.info(msg.strip())
+                    all_msg += ("%s<br/>" % msg)
                 else:  # 链路状态没有变化
                     pass
-                all_msg += ("%s<br/>" % msg)
             testDNSInfo[testDNSIp]["status"] = status
         for testA, forwardInfos in testAInfo.iteritems():  # CDN主机监测
             status = check_host_by_tcp_ping(testA.split(';'))
             for forwardInfo in forwardInfos["forwardInfo"]:
-                if status is True and forwardInfos['status'] is False:  # 主机测试成功
+                if (status is True) and (forwardInfos['status'] is False):  # 主机测试成功
                     flag += 1
                     msg = "view %s include %s,test IP %s success;" % (
                         forwardInfo["viewName"], forwardInfo["forwardName"], testA)
-                elif status is False and forwardInfos['status'] is True:  # 主机测试失败
+                    logger.info(msg.strip())
+                    all_msg += ("%s<br/>" % msg)
+                elif (status is False) and (forwardInfos['status'] is True):  # 主机测试失败
                     flag += 1
                     msg = "delete view %s include %s,test A %s;" % (
                         forwardInfo["viewName"], forwardInfo["forwardName"], testA)
+                    logger.info(msg.strip())
+                    all_msg += ("%s<br/>" % msg)
                 else:  # 链路状态没有变化
                     pass
-                all_msg += ("%s<br/>" % msg)
+
             testAInfo[testA]["status"] = status
         for one in conf.view_list:  # 将探测结果同步到named conf中
+            one["info"]["include"] = []
             for forwardName, testInfo in view_rulers[one["name"]]["forwards"].iteritems():
-                one["info"]["include"] = []
                 testDNS = ';'.join(testInfo["testDNS"])
                 if "testA" in testInfo:  # 如果存在test host, 判断test host是否成功
-                    if testAInfo[';'.join(testInfo["testA"])]["status"] is True and testDNSInfo[testDNS][
-                        "status"] is True:
+                    if (testAInfo[';'.join(testInfo["testA"])]["status"] is True) and (testDNSInfo[testDNS][
+                        "status"] is True):
                         one["info"]["include"].append((forwardName, 100))
                 else:
                     if testDNSInfo[testDNS]["status"] is True:
