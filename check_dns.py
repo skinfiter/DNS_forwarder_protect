@@ -102,14 +102,14 @@ def restart_named():
 
 def start():
     testDNSInfo, testAInfo = load_test_info()  # 加载配置文件
-    # check_named_conf_by_named_check()
+    check_named_conf_by_named_check()    # 使用named-checkconf检查配置文件
     conf = NamedConfig(named_config_path)
     current_status = check_conf_file(conf)
     if not current_status:
         print("settings is different from %s" % named_config_path)
         exit()
     start_time = 0
-    send_mail(title, "<h3>DNS探测保护脚本已开启。</h3>")
+    send_mail("%s-%s:保护脚本已开启." % (title, local_ip), "<h3>DNS探测保护脚本已开启。</h3>")
     while conf.check_hash():
         all_msg = "<html><head></head><body>"
         flag = 0
@@ -126,14 +126,14 @@ def start():
         for view_name, current_rule_id in current_status.iteritems():
             status = view_default_forward_check(view_name, current_rule_id)
             if (type(status) is bool) and (status is False):
-                ##全部dns探测失败，准备切换到楚天
-                if start_time == 0:  ##初次发现，开始计时，策略不变
+                # 全部dns探测失败，准备切换到楚天
+                if start_time == 0:  # 初次发现，开始计时，策略不变
                     start_time = time.time()
                     msg = "all of view %s's default forwarders has filed;plan to change dns to %s;left %d s" % (
                         view_name, ";".join(final_default_change_ip[1]), wait_time)
                     logger.info(msg.strip())
                     all_msg += ("%s<br/>" % msg)
-                elif time.time() - start_time > wait_time:  ##计时达到标准，切换到楚天方向
+                elif time.time() - start_time > wait_time:  # 计时达到标准，切换到楚天方向
                     for one in conf.view_list:
                         if one['name'] == view_name:
                             msg = "change view %s default forwarders to %s;" % (view_name, ';'.join(status[1]))
@@ -144,11 +144,11 @@ def start():
                             all_msg += ("%s<br/>" % msg)
                 else:
                     pass
-            elif (type(status) is bool) and (status is True):  ##当前策略探测成功，且没有优先级更高的策略成功
-                if start_time != 0:  ##若已经开始切换计时，则停止计时
+            elif (type(status) is bool) and (status is True):  # 当前策略探测成功，且没有优先级更高的策略成功
+                if start_time != 0:  # 若已经开始切换计时，则停止计时
                     start_time = 0
-            else:  ## 当前dns探测失败，且有其他dns探测成功
-                if status[0] == final_default_change_ip[0]:  ## 其他所有dns探测失败，楚天方向dns探测成功
+            else:  # 当前dns探测失败，且有其他dns探测成功
+                if status[0] == final_default_change_ip[0]:  # 其他所有dns探测失败，楚天方向dns探测成功
                     if start_time == 0:  # 初次发现，准备切换到楚天方向
                         start_time = time.time()
                         msg = "plan change view %s default forwarders to %s;left %d s" % (
@@ -219,7 +219,7 @@ def start():
                 testDNS = ';'.join(testInfo["testDNS"])
                 if "testA" in testInfo:  # 如果存在test host, 判断test host是否成功
                     if (testAInfo[';'.join(testInfo["testA"])]["status"] is True) and (testDNSInfo[testDNS][
-                        "status"] is True):
+                                                                                           "status"] is True):
                         one["info"]["include"].append((forwardName, 100))
                 else:
                     if testDNSInfo[testDNS]["status"] is True:
@@ -232,7 +232,7 @@ def start():
             msg = "restart named service"
             logger.info(msg)
             all_msg += ("%s<br/></body></html>" % msg)
-            send_mail(title, all_msg)
+            send_mail("%s-%s:DNS切换提醒." % (title, local_ip), all_msg)
         time.sleep(5)
     send_mail(title, "%s has been modified by someone,check script stop" % named_config_path)
 
@@ -244,19 +244,22 @@ def tcp_connect(host, port):  #
     try:
         tcpClient.connect((host, int(port)))
         tcpClient.close()
+        logger.info("tcpping host %s on port %s is ok" % (host, port))
         return True
     except:
+        logger.error("tcpping host %s on port %s is failed" % (host, port))
         return False
+
 
 def check_host_by_tcp_ping(iplist):
     # 通过tcpping检查目标主机是否存活
     for addr in iplist:
         tmp = addr.split(":")
         for _ in range(TCP_RETRY):
-            print("%d try"% _ )
-            if tcp_connect(tmp[0],tmp[1]) is True:
+            if tcp_connect(tmp[0], tmp[1]) is True:
                 return True
     return False
 
+
 if __name__ == "__main__":
-    print check_host_by_tcp_ping(["114.114.114.114:43","8.8.8.8:53"])
+    print check_host_by_tcp_ping(["114.114.114.114:43", "8.8.8.8:53"])
