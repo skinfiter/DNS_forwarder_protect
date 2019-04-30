@@ -15,4 +15,4 @@ def check_named_process():
 
 
 if __name__ == '__main__':
-   print check_named_process()
+   print (check_named_process())

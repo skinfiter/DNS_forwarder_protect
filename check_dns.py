@@ -14,14 +14,14 @@ from pstool import *
 import json
 
 
-def pro_check(test_dns, domain):
+def pro_check(test_dns, domain):   # 检查dns解析
     try:
         my_resolver = dns.resolver.Resolver()
         my_resolver.nameservers = [test_dns]
         my_resolver.timeout = 2
         my_resolver.lifetime = 2
         answer = my_resolver.query(domain)
-        result = answer.rrset.items
+        # result = answer.rrset.items
         iplist = [ip.address for ip in answer.rrset.items]
         if len(iplist) > 0:
             return True
@@ -32,24 +32,15 @@ def pro_check(test_dns, domain):
         return False
 
 
-def check_dns(dns_list):
-    domain_list = check_domain_list
-    faild1 = 0
-    for dns in dns_list:
-        faild = 0
-        for domain in domain_list:
-            if not pro_check(dns, domain):
-                faild += 1
-                logger.error("resolve " + domain + " @" + dns + " faild")
+def check_dns(dns_list):  # 所有域名在所有DNS上均解析失败才算作失败
+    for domain in check_domain_list:
+        for dns in dns_list:
+            if pro_check(dns, domain) is False:
+                logger.error("resolve %s @%s faild" % (domain, dns))
             else:
-                logger.info("resolve " + domain + " @" + dns + " ok")
+                logger.info("resolve %s @%s ok" % (domain, dns))
                 return True
-        if faild == len(domain_list):  # 某一dns全部探测失败才算作失败
-            faild1 += 1
-    if faild1 >= len(dns_list):
-        return False  # 多个dns全部失败才算做该方向失败
-    else:
-        return True
+    return False
 
 
 def view_default_forward_check(view_name, current_rule_id):
@@ -75,7 +66,7 @@ def check_named_conf_by_named_check():
     result = os.popen(cmd).read()
     if result != '':
         print(result)
-        send_mail(title,
+        send_mail(u"%s::配置文件检查失败" % title,
                   '<html><head></head><body>named-checkconf has faild:%s<br/>named will not restart and check script stopd</body></html>' % result)
         exit()
 
@@ -102,14 +93,14 @@ def restart_named():
 
 def start():
     testDNSInfo, testAInfo = load_test_info()  # 加载配置文件
-    check_named_conf_by_named_check()    # 使用named-checkconf检查配置文件
+    check_named_conf_by_named_check()  # 使用named-checkconf检查配置文件
     conf = NamedConfig(named_config_path)
     current_status = check_conf_file(conf)
     if not current_status:
         print("settings is different from %s" % named_config_path)
         exit()
     start_time = 0
-    send_mail("%s-%s:保护脚本已开启." % (title, local_ip), "<h3>DNS探测保护脚本已开启。</h3>")
+    send_mail(u"%s::保护脚本已开启." % title, "<h3>DNS探测保护脚本已开启。</h3>")
     while conf.check_hash():
         all_msg = "<html><head></head><body>"
         flag = 0
@@ -117,7 +108,7 @@ def start():
             msg = "named process is not existed,try restart;"
             logger.info(msg)
             restart_named()
-            send_mail(title, msg)
+            send_mail(u"%s::named进程不存在" % title, msg)
             time.sleep(300)
             continue
         msg = "current DNS is %s" % json.dumps(current_status)
@@ -232,9 +223,9 @@ def start():
             msg = "restart named service"
             logger.info(msg)
             all_msg += ("%s<br/></body></html>" % msg)
-            send_mail("%s-%s:DNS切换提醒." % (title, local_ip), all_msg)
+            send_mail(u"%s::DNS切换提醒." % title, all_msg)
         time.sleep(5)
-    send_mail(title, "%s has been modified by someone,check script stop" % named_config_path)
+    send_mail(u"%s::配置文件异常修改." % title, "%s has been modified by someone,check script stop" % named_config_path)
 
 
 def tcp_connect(host, port):  #

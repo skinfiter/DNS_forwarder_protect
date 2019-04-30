@@ -2,7 +2,6 @@
 
 import os
 import sys
-import re
 import time
 import shutil
 from config import *
@@ -13,11 +12,11 @@ from named_conf_parser import NamedConfig
 def dump_named_conf():
     # 备份named.conf文件
     script_path = os.path.split(os.path.realpath(sys.argv[0]))[0]
-    time_step = int(time.time())
+    time_step = time.strftime("%Y%m%d%H%M%S", time.localtime())
     back_config_path = os.path.join(script_path, ".back_config")
     config_name = os.path.split(named_config_path)[-1]
-    back_config_name = os.path.join(back_config_path, "%s-%d" % (config_name, time_step))
-    if not os.path.isdir(back_config_path):
+    back_config_name = os.path.join(back_config_path, "%s-%s" % (config_name, time_step))
+    if os.path.isdir(back_config_path) is False:
         os.mkdir(back_config_path)
     shutil.copyfile(named_config_path, back_config_name)
     logger.info("dump config file to:%s" % back_config_name)
@@ -63,11 +62,11 @@ def check_conf_file(conf):
         for namedView in conf.view_list:
             print('check view %s config...' % namedView['name'])
             if namedView['name'] not in view_rulers:  # check conf和named conf中相同的view name进行比较
-                print("%s not in check config,please check ..." )
+                print("%s not in check config,please check ...")
                 return False
             else:
-                checkView=view_rulers[namedView['name']]
-                if checkView['forwards'] != {} and 'include' in namedView['info'] :
+                checkView = view_rulers[namedView['name']]
+                if checkView['forwards'] != {} and 'include' in namedView['info']:
                     if not cmp_forwards(checkView['forwards'], namedView['info']['include']):
                         return False
                 elif checkView['forwards'] == {} and 'include' not in namedView['info']:
@@ -93,9 +92,9 @@ def default_forwarders_in_list(setting_default_forwarders, conf_forwarders_list)
 
 def cmp_forwards(setting_forwards_list, conf_forwards_list):
     # 比较两个forwards list是否相同
-    if len(conf_forwards_list) != len(setting_forwards_list):   # 数量不同，直接跳出
+    if len(conf_forwards_list) != len(setting_forwards_list):  # 数量不同，直接跳出
         return False
-    for forward in conf_forwards_list:   # 某个forward在check conf中没有配置
+    for forward in conf_forwards_list:  # 某个forward在check conf中没有配置
         if forward[0] not in setting_forwards_list:
             return False
     return True
